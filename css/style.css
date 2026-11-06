@@ -1303,6 +1303,19 @@ html.js .project-card.revealed { opacity: 1; transform: none; }
     padding: 12px 0 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     touch-action: none;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Invisible hit-zone extension: total grab area ≈ 45px (≥44px mobile standard) */
+  .modal-top-bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: calc(100% + 15px);
   }
 
   .modal-top-bar .modal-drag-handle {
@@ -1315,6 +1328,10 @@ html.js .project-card.revealed { opacity: 1; transform: none; }
     align-items: center;
     margin-bottom: 1.5rem;
     padding-top: 12px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   .project-modal-content {
@@ -1354,7 +1371,6 @@ html.js .project-card.revealed { opacity: 1; transform: none; }
     padding: 0.25rem;
     height: auto;
     scrollbar-width: none;
-    touch-action: pan-y;
   }
 
   .carousel-stack::-webkit-scrollbar { display: none; }

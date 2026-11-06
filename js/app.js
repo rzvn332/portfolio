@@ -520,20 +520,42 @@
 
   function closeProjectModal() {
     var modalContent = modal.querySelector('.project-modal-content');
+    // A drag gesture leaves inline `animation: none` + a transform on the sheet.
+    // Clear them first: running/filled animations override inline styles, so
+    // without this reset the sheet-close CSS animation would never take over
+    // (and the modal would stay visually stuck).
+    modalContent.style.animation = '';
+    modalContent.style.transform = '';
+    modalContent.style.transition = '';
     modalContent.classList.remove('sheet-open');
     modalContent.classList.add('sheet-close');
 
     modalContent.addEventListener('animationend', function onEnd() {
       modalContent.removeEventListener('animationend', onEnd);
-      modalContent.classList.remove('sheet-close');
-      modal.classList.remove('active');
-      unlockScroll();
-      state.modalProject = null;
-      restoreFocus();
+      finishModalClose();
     }, { once: true });
+
+    // Safety net in case animationend never fires
+    setTimeout(finishModalClose, 400);
 
     slideObserver && slideObserver.disconnect();
     slideObserver = null;
+  }
+
+  // Single cleanup path shared by X/overlay close and swipe-down close.
+  function finishModalClose() {
+    if (!modal.classList.contains('active')) return;
+    var modalContent = modal.querySelector('.project-modal-content');
+    modalContent.classList.remove('sheet-open');
+    modalContent.classList.remove('sheet-close');
+    modalContent.style.transform = '';
+    modalContent.style.transition = '';
+    modalContent.style.animation = '';
+    modalContent.style.willChange = '';
+    modal.classList.remove('active');
+    unlockScroll();
+    state.modalProject = null;
+    restoreFocus();
   }
 
   function restoreFocus() {
@@ -635,11 +657,16 @@
     var THRESHOLD_PCT = 0.25;
 
     function onDragStart(e) {
-      if (!e.target.closest('.modal-top-bar')) return;
+      if (window.innerWidth > 640) return; // mobile-only gesture
+      if (!e.target.closest('.modal-top-bar, .project-modal-header')) return;
       if (navigator.vibrate) navigator.vibrate(50);
       var touch = e.touches?.[0] || e;
       startY = touch.clientY;
       isDragging = true;
+      // KEY: neutralize the `sheet-open ... forwards` fill-mode. While it stays
+      // filled, the animation (not our inline style) owns `transform`, so the
+      // sheet refuses to follow the finger. With it off, tracking is 1:1.
+      modalContent.style.animation = 'none';
       modalContent.style.transition = 'none';
       modalContent.style.willChange = 'transform';
     }
@@ -662,22 +689,29 @@
       var threshold = modalContent.offsetHeight * THRESHOLD_PCT;
 
       modalContent.style.transition = 'transform 0.3s var(--ease-out)';
-      modalContent.style.willChange = 'auto';
 
       if (deltaY > threshold) {
         modalContent.style.transform = 'translateY(100%)';
-        setTimeout(closeProjectModal, 300);
+        // The inline transition above performs the exit glide. Re-running
+        // sheet-down would snap back to translateY(0) first (visible jump),
+        // so skip the class animation and clean up once settled.
+        setTimeout(finishModalClose, 320);
       } else {
+        // Snap back to rest; clearing willChange lets the browser drop the layer
         modalContent.style.transform = '';
+        modalContent.style.willChange = 'auto';
       }
     }
 
-    if (modalTopBar) {
-      modalTopBar.addEventListener('touchstart', onDragStart, { passive: true });
-      modalTopBar.addEventListener('touchmove', onDragMove, { passive: false });
-      modalTopBar.addEventListener('touchend', onDragEnd);
-      modalTopBar.addEventListener('touchcancel', onDragEnd);
-    }
+    // Grab zones: the top bar (drag handle) and the modal header (title row) —
+    // matches the spec: swipe starts when grabbing the handle OR the header area.
+    [modalTopBar, modal.querySelector('.project-modal-header')].forEach(function (el) {
+      if (!el) return;
+      el.addEventListener('touchstart', onDragStart, { passive: true });
+      el.addEventListener('touchmove', onDragMove, { passive: false });
+      el.addEventListener('touchend', onDragEnd);
+      el.addEventListener('touchcancel', onDragEnd);
+    });
   }
 
   // ------------------------------------------------------------------ viewer

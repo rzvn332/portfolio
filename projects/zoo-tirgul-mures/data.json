@@ -1,0 +1,17 @@
+{
+  "id": 2,
+  "slug": "zoo-tirgul-mures",
+  "title": "Zoo Tîrgul Mureș",
+  "category": "banner",
+  "alt": "Zoo Tîrgul Mureș promotional poster design - giraffe collage banner by RZVN",
+  "technologies": ["Figma"],
+  "title_ro": "Zoo Tîrgul Mureș",
+  "title_ru": "Zoo Tîrgul Mureș",
+  "description": "Promotional poster for Zoo Tîrgul Mureș. A modern collage composition combining a black-and-white giraffe portrait with bold botanical shapes, creating an elegant visual identity.",
+  "description_ro": "Poster promoțional pentru Zoo Tîrgul Mureș. O compoziție modernă de tip colaj ce combină portretul alb-negru al unei girafe cu forme botanice stilizate, creând o identitate vizuală elegantă.",
+  "description_ru": "Рекламный постер для Zoo Tîrgul Mureș. Современная коллажная композиция, сочетающая черно-белый портрет жирафа со стилизованными ботаническими формами, создающая элегантную визуальную айдентику.",
+  "images": [
+	{ "t": "images/zoo-full.avif", "f": "images/zoo-full.avif", "w": 900, "h": 900, "fw": 1440, "fh": 1440 },
+    { "t": "images/zoo.avif", "f": "images/zoo-full.avif", "w": 900, "h": 536, "fw": 1440, "fh": 857 }
+  ]
+}

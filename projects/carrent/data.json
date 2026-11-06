@@ -1,0 +1,17 @@
+{
+  "id": 4,
+  "slug": "carrent",
+  "title": "CarRent",
+  "category": "banner",
+  "alt": "CarRent SUV rental banner design - advertising banner by RZVN",
+  "technologies": ["Photoshop", "Illustrator"],
+  "title_ro": "CarRent",
+  "title_ru": "CarRent",
+  "description": "Eye-catching banner for RentCar, blending clean design and compelling messaging to promote SUV rentals. Perfect for digital or print campaigns.",
+  "description_ro": "Banner atrăgător pentru RentCar, combinând designul curat și mesajul convingător pentru a promova închirierea SUV-urilor. Perfect pentru campanii digitale sau tipărite.",
+  "description_ru": "Привлекающий внимание баннер для RentCar, сочетающий чистый дизайн и убедительное сообщение для продвижения аренды внедорожников. Идеален для цифровых или печатных кампаний.",
+  "images": [
+    { "t": "images/img1.avif", "f": "images/img1.avif", "w": 900, "h": 468, "fw": 1440, "fh": 748 },
+    { "t": "images/img2.avif", "f": "images/img2.avif", "w": 900, "h": 468, "fw": 1440, "fh": 748 }
+  ]
+}

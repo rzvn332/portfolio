@@ -1,0 +1,16 @@
+{
+  "id": 3,
+  "slug": "cricova",
+  "title": "Cricova",
+  "category": "banner",
+  "alt": "Cricova wine advertising banner design - vintage bottle illustration by RZVN",
+  "technologies": ["Figma", "AI"],
+  "title_ro": "Cricova",
+  "title_ru": "Cricova",
+  "description": "Advertising banner - Cricova. A visual concept that combines the vintage look of the bottle with the illustration of underground cellars, reflecting the tradition and premium quality of the wine.",
+  "description_ro": "Banner publicitar - Cricova. Un concept vizual ce îmbină aspectul vintage al sticlei cu ilustrația cramelor subterane, reflectând tradiția și calitatea premium a vinului.",
+  "description_ru": "Рекламный баннер - Cricova. Визуальная концепция, сочетающая винтажный вид бутылки с изображением подземных погребов, отражающая традиции и высокое качество вина.",
+  "images": [
+    { "t": "images/Cricova.avif", "f": "images/Cricova.avif", "w": 900, "h": 536, "fw": 1440, "fh": 857 }
+  ]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rzvn332.github.io/portfolio/sitemap.xml

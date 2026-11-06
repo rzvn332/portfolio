@@ -1,0 +1,24 @@
+{
+  "id": 7,
+  "slug": "just-recycle",
+  "title": "Just Recycle",
+  "category": "ui",
+  "alt": "JustRecycle mobile app UI/UX design - eco recycling app interface by RZVN",
+  "technologies": ["Figma", "Photoshop"],
+  "title_ro": "Just Recycle",
+  "title_ru": "Just Recycle",
+  "description": "JustRecycle is a smart UI/UX app that identifies objects from images and recommends the right, eco-friendly recycling methods.",
+  "description_ro": "JustRecycle este o aplicație UI/UX inteligentă care identifică obiecte din imagini și recomandă metodele corecte de reciclare ecologică.",
+  "description_ru": "JustRecycle — это умное приложение UI/UX, которое определяет объекты по изображениям и рекомендует правильные экологичные методы переработки.",
+  "images": [
+    { "t": "images/img1.avif", "f": "images/img1.avif", "w": 900, "h": 471, "fw": 1440, "fh": 754 },
+    { "t": "images/img2.avif", "f": "images/img2.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img3.avif", "f": "images/img3.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img4.avif", "f": "images/img4.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img5.avif", "f": "images/img5.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img6.avif", "f": "images/img6.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img7.avif", "f": "images/img7.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img8.avif", "f": "images/img8.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 },
+    { "t": "images/img9.avif", "f": "images/img9.avif", "w": 900, "h": 585, "fw": 1440, "fh": 935 }
+  ]
+}

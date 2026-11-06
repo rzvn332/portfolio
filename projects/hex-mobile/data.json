@@ -1,0 +1,19 @@
+{
+  "id": 5,
+  "slug": "hex-mobile",
+  "title": "Hex Mobile",
+  "category": "logo",
+  "alt": "HexMobile logo design - hexagon M technology logo by RZVN",
+  "technologies": ["Illustrator"],
+  "title_ro": "Hex Mobile",
+  "title_ru": "Hex Mobile",
+  "description": "A modern logo for HexMobile, combining a hexagon symbol and the letter \"M\" to represent technology, connectivity, and mobile innovation.",
+  "description_ro": "Un logo modern pentru HexMobile, combinând simbolul hexagonal și litera \"M\" pentru a reprezenta tehnologia, conectivitatea și inovația mobilă.",
+  "description_ru": "Современный логотип для HexMobile, сочетающий символ шестиугольника и букву «M», который олицетворяет технологии, связь и мобильные инновации.",
+  "images": [
+    { "t": "images/img1.avif", "f": "images/img1.avif", "w": 900, "h": 600, "fw": 1404, "fh": 960 },
+    { "t": "images/img2.avif", "f": "images/img2.avif", "w": 900, "h": 600, "fw": 1404, "fh": 960 },
+    { "t": "images/img3.avif", "f": "images/img3.avif", "w": 900, "h": 282, "fw": 1404, "fh": 451 },
+    { "t": "images/img4.avif", "f": "images/img4.avif", "w": 900, "h": 282, "fw": 1404, "fh": 451 }
+  ]
+}

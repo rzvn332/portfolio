@@ -1,0 +1,18 @@
+{
+  "id": 6,
+  "slug": "build-x",
+  "title": "Build X",
+  "category": "logo",
+  "alt": "Build X logo design - high-performance custom PC brand logo by RZVN",
+  "technologies": ["Illustrator"],
+  "title_ro": "Build X",
+  "title_ru": "Build X",
+  "description": "Build X logo represents power, speed, and precision, for a company that builds custom, high-performance PCs from scratch.",
+  "description_ro": "Logo-ul Build X reprezintă puterea, viteza și precizia, pentru o companie care construiește PC-uri personalizate de înaltă performanță de la zero.",
+  "description_ru": "Логотип Build X представляет мощность, скорость и точность для компании, которая собирает пользовательские высокопроизводительные ПК с нуля.",
+  "images": [
+    { "t": "images/img1.avif", "f": "images/img1.avif", "w": 900, "h": 450, "fw": 1440, "fh": 720 },
+    { "t": "images/img2.avif", "f": "images/img2.avif", "w": 900, "h": 450, "fw": 1440, "fh": 720 },
+    { "t": "images/img3.avif", "f": "images/img3.avif", "w": 900, "h": 900, "fw": 900, "fh": 1440 }
+  ]
+}

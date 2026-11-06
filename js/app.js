@@ -722,7 +722,8 @@
       active: false, locked: false, moved: false,
       startX: 0, startY: 0, startScroll: 0,
       slideW: 0, startIndex: 0, prevBound: 0, nextBound: 0,
-      lastX: 0, lastT: 0, totalDX: 0
+      lastX: 0, lastT: 0, totalDX: 0,
+      samples: [] // recent touchmove samples for window-based flick velocity
     };
 
     function onStripStart(e) {
@@ -741,6 +742,7 @@
       stripDrag.lastX = touch.clientX;
       stripDrag.lastT = e.timeStamp;
       stripDrag.totalDX = 0;
+      stripDrag.samples = [];
 
       // Physically centred slide right now — re-syncs any stale index
       var best = 0, bestDelta = Infinity;
@@ -775,6 +777,9 @@
       stripDrag.totalDX = dx;
       stripDrag.lastX = touch.clientX;
       stripDrag.lastT = e.timeStamp;
+      // Rolling sample history for window-based flick detection
+      stripDrag.samples.push({ t: e.timeStamp, x: touch.clientX });
+      if (stripDrag.samples.length > 12) stripDrag.samples.shift();
 
       var desired = stripDrag.startScroll - dx;
       // Rubber resistance beyond the ±1 window (cannot stack up more slides)
@@ -790,19 +795,35 @@
       stripDrag.moved = false;
 
       var touch = e.changedTouches?.[0];
-      var dt = e.timeStamp - stripDrag.lastT;
-      var v = dt > 0 ? ((touch ? touch.clientX : stripDrag.lastX) - stripDrag.lastX) / dt : 0;
+      var endX = touch ? touch.clientX : stripDrag.lastX;
+      var endT = e.timeStamp;
+
+      // Flick velocity over the trailing ~90ms window (robust even when the
+      // finger has already slowed before lifting, or when touchend lands on
+      // the same coordinate as the last touchmove — the old single-segment
+      // formula produced v ≈ 0 there and silently dropped short flicks).
+      var oldest = stripDrag.samples.length ? stripDrag.samples[0] : { t: endT, x: endX };
+      if (stripDrag.samples.length) {
+        var winStart = endT - 90;
+        for (var j = stripDrag.samples.length - 1; j >= 0; j--) {
+          if (stripDrag.samples[j].t < winStart) break;
+          oldest = stripDrag.samples[j];
+        }
+      }
+      var dtWin = endT - oldest.t;
+      var v = dtWin > 0 ? (endX - oldest.x) / dtWin : 0;
 
       var slides = modalStack.children;
       var from = stripDrag.startIndex;
       var displaced = modalStack.scrollLeft - stripCenterLeft(slides[from]);
 
-      // Commit rule: a fast flick wins, else 35% of one slide. Either way: ±1 or stay.
+      // Commit rule: a fast short flick wins, else 25% of one slide.
+      // Either way: ±1 or stay — never more than one position per gesture.
       var dir = 0;
-      if (v <= -0.6 && Math.abs(stripDrag.totalDX) > 15) dir = 1;
-      else if (v >= 0.6 && Math.abs(stripDrag.totalDX) > 15) dir = -1;
-      else if (displaced > stripDrag.slideW * 0.35) dir = 1;
-      else if (displaced < -stripDrag.slideW * 0.35) dir = -1;
+      if (v <= -0.5 && Math.abs(stripDrag.totalDX) > 8) dir = 1;
+      else if (v >= 0.5 && Math.abs(stripDrag.totalDX) > 8) dir = -1;
+      else if (displaced > stripDrag.slideW * 0.25) dir = 1;
+      else if (displaced < -stripDrag.slideW * 0.25) dir = -1;
 
       var target = Math.min(slides.length - 1, Math.max(0, from + dir));
       goToSlide(target, 'smooth');

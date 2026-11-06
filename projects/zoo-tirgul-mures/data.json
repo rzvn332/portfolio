@@ -12,6 +12,6 @@
   "description_ru": "Рекламный постер для Zoo Tîrgul Mureș. Современная коллажная композиция, сочетающая черно-белый портрет жирафа со стилизованными ботаническими формами, создающая элегантную визуальную айдентику.",
   "images": [
 	{ "t": "images/zoo-full.avif", "f": "images/zoo-full.avif", "w": 900, "h": 900, "fw": 1440, "fh": 1440 },
-    { "t": "images/zoo.avif", "f": "images/zoo-full.avif", "w": 900, "h": 536, "fw": 1440, "fh": 857 }
+    { "t": "images/zoo.avif", "f": "images/zoo.avif", "w": 900, "h": 536, "fw": 1440, "fh": 857 }
   ]
 }

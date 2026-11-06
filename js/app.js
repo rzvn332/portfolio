@@ -454,7 +454,14 @@
   var modalClose = $('#modalClose');
   var slideObserver = null;
   var isPortraitStrip = function () { return window.innerWidth <= 640; };
-  var slideChangeLock = false;
+
+  // scrollLeft that would centre `slide` inside the strip (rect-based:
+  // correct regardless of CSS offsetParent quirks)
+  function stripCenterLeft(slide) {
+    var sRect = slide.getBoundingClientRect();
+    var nRect = modalStack.getBoundingClientRect();
+    return modalStack.scrollLeft + (sRect.left - nRect.left) - (nRect.width - sRect.width) / 2;
+  }
 
   function fillModalTexts(project, resetHtml) {
     modalCategory.textContent = project.category.toUpperCase();
@@ -576,10 +583,6 @@
   }
 
   function setSlide(index) {
-    if (slideChangeLock) return;
-    slideChangeLock = true;
-    setTimeout(function () { slideChangeLock = false; }, 300);
-
     state.modalIndex = index;
     $$('#carouselStack .carousel-slide').forEach(function (s, i) {
       s.classList.toggle('active', i === index);
@@ -605,9 +608,9 @@
     var next = (index + total) % total;
     if (isPortraitStrip() && modalStack.children[next]) {
       var target = modalStack.children[next];
-      // Instant scroll for direct thumbnail navigation, smooth for arrow navigation
+      // Instant scroll for direct thumbnail navigation, smooth for one-step swipe
       var behavior = (arguments.length > 1 && arguments[1] === 'smooth') ? 'smooth' : 'instant';
-      modalStack.scrollTo({ left: target.offsetLeft - (modalStack.clientWidth - target.offsetWidth) / 2, behavior: behavior });
+      modalStack.scrollTo({ left: stripCenterLeft(target), behavior: behavior });
       setSlide(next);
     } else {
       setSlide(next);
@@ -618,15 +621,10 @@
     if (!('IntersectionObserver' in window)) return;
     slideObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          var index = Array.prototype.indexOf.call(modalStack.children, entry.target);
-          if (index !== -1 && index !== state.modalIndex) {
-            setSlide(index);
-            if (modalStack.children[index]) {
-              modalStack.children[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-          }
-        }
+        if (!entry.isIntersecting) return;
+        var index = Array.prototype.indexOf.call(modalStack.children, entry.target);
+        // Pure state-sync: positioning is owned by goToSlide / the drag controller
+        if (index !== -1 && index !== state.modalIndex) setSlide(index);
       });
     }, { root: modalStack, threshold: 0.8 });
     Array.prototype.slice.call(modalStack.children).forEach(function (s) { slideObserver.observe(s); });
@@ -712,6 +710,108 @@
       el.addEventListener('touchend', onDragEnd);
       el.addEventListener('touchcancel', onDragEnd);
     });
+
+    // --------------------------------------------------------------------
+    // One-step horizontal swipe for the carousel strip (mobile only).
+    // Browser-native horizontal panning/fling is disabled in CSS
+    // (`touch-action: pan-y`); here we drive scrollLeft manually and clamp
+    // the grab window to exactly the adjacent slide, so one gesture can
+    // never advance by more than one image — whatever the speed/distance.
+    // --------------------------------------------------------------------
+    var stripDrag = {
+      active: false, locked: false, moved: false,
+      startX: 0, startY: 0, startScroll: 0,
+      slideW: 0, startIndex: 0, prevBound: 0, nextBound: 0,
+      lastX: 0, lastT: 0, totalDX: 0
+    };
+
+    function onStripStart(e) {
+      if (window.innerWidth > 640 || stripDrag.active) return;
+      var slides = modalStack.children;
+      if (slides.length <= 1) return;
+      var touch = e.touches?.[0];
+      if (!touch) return;
+
+      stripDrag.active = true;
+      stripDrag.locked = false;
+      stripDrag.moved = false;
+      stripDrag.startX = touch.clientX;
+      stripDrag.startY = touch.clientY;
+      stripDrag.startScroll = modalStack.scrollLeft;
+      stripDrag.lastX = touch.clientX;
+      stripDrag.lastT = e.timeStamp;
+      stripDrag.totalDX = 0;
+
+      // Physically centred slide right now — re-syncs any stale index
+      var best = 0, bestDelta = Infinity;
+      for (var i = 0; i < slides.length; i++) {
+        var delta = Math.abs(stripCenterLeft(slides[i]) - modalStack.scrollLeft);
+        if (delta < bestDelta) { bestDelta = delta; best = i; }
+      }
+      stripDrag.startIndex = best;
+      stripDrag.slideW = slides[best].offsetWidth || 1;
+      // Hard grab bounds: never beyond the adjacent slide
+      stripDrag.prevBound = slides[best - 1] ? stripCenterLeft(slides[best - 1]) : stripCenterLeft(slides[best]);
+      stripDrag.nextBound = slides[best + 1] ? stripCenterLeft(slides[best + 1]) : stripCenterLeft(slides[best]);
+    }
+
+    function onStripMove(e) {
+      if (!stripDrag.active) return;
+      var touch = e.touches?.[0];
+      if (!touch) return;
+      if (e.touches.length > 1) { stripDrag.locked = 'y'; return; } // multi-touch → abandon
+
+      var dx = touch.clientX - stripDrag.startX;
+      var dy = touch.clientY - stripDrag.startY;
+
+      if (!stripDrag.locked) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;        // dead zone → real taps unaffected
+        stripDrag.locked = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+      }
+      if (stripDrag.locked !== 'x') return;                      // vertical → native modal scroll
+
+      e.preventDefault();                                        // the strip owns the horizontal pan now
+      stripDrag.moved = true;
+      stripDrag.totalDX = dx;
+      stripDrag.lastX = touch.clientX;
+      stripDrag.lastT = e.timeStamp;
+
+      var desired = stripDrag.startScroll - dx;
+      // Rubber resistance beyond the ±1 window (cannot stack up more slides)
+      if (desired < stripDrag.prevBound) desired = stripDrag.prevBound + (desired - stripDrag.prevBound) / 3;
+      else if (desired > stripDrag.nextBound) desired = stripDrag.nextBound + (desired - stripDrag.nextBound) / 3;
+      modalStack.scrollLeft = desired;
+    }
+
+    function onStripEnd(e) {
+      if (!stripDrag.active) return;
+      stripDrag.active = false;
+      if (!stripDrag.moved) { stripDrag.locked = false; return; } // tap / untouched → native click
+      stripDrag.moved = false;
+
+      var touch = e.changedTouches?.[0];
+      var dt = e.timeStamp - stripDrag.lastT;
+      var v = dt > 0 ? ((touch ? touch.clientX : stripDrag.lastX) - stripDrag.lastX) / dt : 0;
+
+      var slides = modalStack.children;
+      var from = stripDrag.startIndex;
+      var displaced = modalStack.scrollLeft - stripCenterLeft(slides[from]);
+
+      // Commit rule: a fast flick wins, else 35% of one slide. Either way: ±1 or stay.
+      var dir = 0;
+      if (v <= -0.6 && Math.abs(stripDrag.totalDX) > 15) dir = 1;
+      else if (v >= 0.6 && Math.abs(stripDrag.totalDX) > 15) dir = -1;
+      else if (displaced > stripDrag.slideW * 0.35) dir = 1;
+      else if (displaced < -stripDrag.slideW * 0.35) dir = -1;
+
+      var target = Math.min(slides.length - 1, Math.max(0, from + dir));
+      goToSlide(target, 'smooth');
+    }
+
+    modalStack.addEventListener('touchstart', onStripStart, { passive: true });
+    modalStack.addEventListener('touchmove', onStripMove, { passive: false });
+    modalStack.addEventListener('touchend', onStripEnd);
+    modalStack.addEventListener('touchcancel', onStripEnd);
   }
 
   // ------------------------------------------------------------------ viewer

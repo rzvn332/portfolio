@@ -1371,6 +1371,10 @@ html.js .project-card.revealed { opacity: 1; transform: none; }
     padding: 0.25rem;
     height: auto;
     scrollbar-width: none;
+    /* Horizontal panning is fully JS-driven (one-step drag in app.js):
+       the browser must never start its own native pan/fling, while
+       vertical panning still chains to the modal content scroll. */
+    touch-action: pan-y;
   }
 
   .carousel-stack::-webkit-scrollbar { display: none; }

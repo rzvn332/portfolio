@@ -454,6 +454,7 @@
   var modalClose = $('#modalClose');
   var slideObserver = null;
   var isPortraitStrip = function () { return window.innerWidth <= 640; };
+  var slideChangeLock = false;
 
   function fillModalTexts(project, resetHtml) {
     modalCategory.textContent = project.category.toUpperCase();
@@ -503,7 +504,7 @@
       thumb.className = 'carousel-thumb';
       thumb.innerHTML = '<img src="' + img.t + '" alt="" width="' + img.w + '" height="' + img.h +
         '" loading="lazy" decoding="async">';
-      thumb.addEventListener('click', function () { goToSlide(index); });
+      thumb.addEventListener('click', function () { goToSlide(index, 'instant'); });
       modalThumbs.appendChild(thumb);
     });
 
@@ -553,6 +554,10 @@
   }
 
   function setSlide(index) {
+    if (slideChangeLock) return;
+    slideChangeLock = true;
+    setTimeout(function () { slideChangeLock = false; }, 300);
+
     state.modalIndex = index;
     $$('#carouselStack .carousel-slide').forEach(function (s, i) {
       s.classList.toggle('active', i === index);
@@ -562,6 +567,14 @@
       b.classList.toggle('active', i === index);
     });
     setAssignments(index);
+
+    // Preload next image
+    var images = state.modalProject ? state.modalProject.images : [];
+    var nextIdx = (index + 1) % images.length;
+    if (images[nextIdx]) {
+      var preloadImg = new Image();
+      preloadImg.src = images[nextIdx].f;
+    }
   }
 
   function goToSlide(index) {
@@ -570,7 +583,9 @@
     var next = (index + total) % total;
     if (isPortraitStrip() && modalStack.children[next]) {
       var target = modalStack.children[next];
-      modalStack.scrollTo({ left: target.offsetLeft - (modalStack.clientWidth - target.offsetWidth) / 2, behavior: 'smooth' });
+      // Instant scroll for direct thumbnail navigation, smooth for arrow navigation
+      var behavior = (arguments.length > 1 && arguments[1] === 'smooth') ? 'smooth' : 'instant';
+      modalStack.scrollTo({ left: target.offsetLeft - (modalStack.clientWidth - target.offsetWidth) / 2, behavior: behavior });
       setSlide(next);
     } else {
       setSlide(next);
@@ -591,7 +606,7 @@
           }
         }
       });
-    }, { root: modalStack, threshold: 0.55 });
+    }, { root: modalStack, threshold: 0.8 });
     Array.prototype.slice.call(modalStack.children).forEach(function (s) { slideObserver.observe(s); });
   }
 
@@ -635,6 +650,7 @@
       var deltaY = touch.clientY - startY;
       if (deltaY <= 0) return;
       e.preventDefault();
+      e.stopPropagation();
       modalContent.style.transform = 'translateY(' + deltaY + 'px)';
     }
 

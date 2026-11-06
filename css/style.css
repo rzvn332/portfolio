@@ -1354,6 +1354,7 @@ html.js .project-card.revealed { opacity: 1; transform: none; }
     padding: 0.25rem;
     height: auto;
     scrollbar-width: none;
+    touch-action: pan-y;
   }
 
   .carousel-stack::-webkit-scrollbar { display: none; }

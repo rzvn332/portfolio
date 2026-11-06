@@ -511,17 +511,28 @@
     goToSlide(0);
 
     modal.classList.add('active');
+    var modalContent = modal.querySelector('.project-modal-content');
+    modalContent.classList.add('sheet-open');
     lockScroll();
     modalClose.focus();
   }
 
   function closeProjectModal() {
+    var modalContent = modal.querySelector('.project-modal-content');
+    modalContent.classList.remove('sheet-open');
+    modalContent.classList.add('sheet-close');
+
+    modalContent.addEventListener('animationend', function onEnd() {
+      modalContent.removeEventListener('animationend', onEnd);
+      modalContent.classList.remove('sheet-close');
+      modal.classList.remove('active');
+      unlockScroll();
+      state.modalProject = null;
+      restoreFocus();
+    }, { once: true });
+
     slideObserver && slideObserver.disconnect();
     slideObserver = null;
-    modal.classList.remove('active');
-    unlockScroll();
-    state.modalProject = null;
-    restoreFocus();
   }
 
   function restoreFocus() {
@@ -600,6 +611,57 @@
         if (isPortraitStrip()) { setupStripObserver(); goToSlide(state.modalIndex); }
       }, 200);
     }, { passive: true });
+
+    // Swipe-down to close on mobile (drag handle + top bar)
+    var modalContent = modal.querySelector('.project-modal-content');
+    var modalTopBar = modal.querySelector('.modal-top-bar');
+    var startY = 0;
+    var isDragging = false;
+    var THRESHOLD_PCT = 0.25;
+
+    function onDragStart(e) {
+      if (!e.target.closest('.modal-top-bar')) return;
+      if (navigator.vibrate) navigator.vibrate(50);
+      var touch = e.touches?.[0] || e;
+      startY = touch.clientY;
+      isDragging = true;
+      modalContent.style.transition = 'none';
+      modalContent.style.willChange = 'transform';
+    }
+
+    function onDragMove(e) {
+      if (!isDragging) return;
+      var touch = e.touches?.[0] || e;
+      var deltaY = touch.clientY - startY;
+      if (deltaY <= 0) return;
+      e.preventDefault();
+      modalContent.style.transform = 'translateY(' + deltaY + 'px)';
+    }
+
+    function onDragEnd(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      var touch = e.changedTouches?.[0] || e;
+      var deltaY = touch.clientY - startY;
+      var threshold = modalContent.offsetHeight * THRESHOLD_PCT;
+
+      modalContent.style.transition = 'transform 0.3s var(--ease-out)';
+      modalContent.style.willChange = 'auto';
+
+      if (deltaY > threshold) {
+        modalContent.style.transform = 'translateY(100%)';
+        setTimeout(closeProjectModal, 300);
+      } else {
+        modalContent.style.transform = '';
+      }
+    }
+
+    if (modalTopBar) {
+      modalTopBar.addEventListener('touchstart', onDragStart, { passive: true });
+      modalTopBar.addEventListener('touchmove', onDragMove, { passive: false });
+      modalTopBar.addEventListener('touchend', onDragEnd);
+      modalTopBar.addEventListener('touchcancel', onDragEnd);
+    }
   }
 
   // ------------------------------------------------------------------ viewer
